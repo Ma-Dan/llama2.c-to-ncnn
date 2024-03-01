@@ -284,9 +284,9 @@ struct graph {
         op &o = ops.back();
         o.type = "MemoryData";
         o.desc = desc;
-        o.params[0] = w;
-        o.params[1] = h;
-        o.params[2] = c;
+        o.params[0] = (long long)w;
+        o.params[1] = (long long)h;
+        o.params[2] = (long long)c;
         o.weights = wt;
         o.weight_size = (w ? w : 1) * (h ? h : 1) * (c ? c : 1);
         o.outputs.push_back(cnt_operands);
@@ -297,7 +297,7 @@ struct graph {
         op &o = ops.back();
         o.type = "BinaryOp";
         o.desc = desc;
-        o.params[0] = 0;  // add
+        o.params[0] = (long long)0;  // add
         o.inputs.push_back(a);
         o.inputs.push_back(b);
         o.outputs.push_back(cnt_operands);
@@ -308,7 +308,7 @@ struct graph {
         op &o = ops.back();
         o.type = "BinaryOp";
         o.desc = desc;
-        o.params[0] = 1;  // minus
+        o.params[0] = (long long)1;  // minus
         o.inputs.push_back(a);
         o.inputs.push_back(b);
         o.outputs.push_back(cnt_operands);
@@ -319,9 +319,9 @@ struct graph {
         op &o = ops.back();
         o.type = "BinaryOp";
         o.desc = desc;
-        o.params[0] = 0;  // add
+        o.params[0] = (long long)0;  // add
         o.inputs.push_back(a);
-        o.params[1] = 1;
+        o.params[1] = (long long)1;
         o.params[2] = b;
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -331,9 +331,9 @@ struct graph {
         op &o = ops.back();
         o.type = "BinaryOp";
         o.desc = desc;
-        o.params[0] = 3;  // div
+        o.params[0] = (long long)3;  // div
         o.inputs.push_back(a);
-        o.params[1] = 1;
+        o.params[1] = (long long)1;
         o.params[2] = b;
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -343,7 +343,7 @@ struct graph {
         op &o = ops.back();
         o.type = "BinaryOp";
         o.desc = desc;
-        o.params[0] = 2;
+        o.params[0] = (long long)2;
         o.inputs.push_back(a);
         o.inputs.push_back(b);
         o.outputs.push_back(cnt_operands);
@@ -354,7 +354,7 @@ struct graph {
         op &o = ops.back();
         o.type = "UnaryOp";
         o.desc = desc;
-        o.params[0] = 6;
+        o.params[0] = (long long)6;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -364,10 +364,10 @@ struct graph {
         op &o = ops.back();
         o.type = "Reduction";
         o.desc = desc;
-        o.params[0] = 3;
-        o.params[1] = 0;
-        o.params[4] = 1;
-        o.params[5] = 1;
+        o.params[0] = (long long)3;
+        o.params[1] = (long long)0;
+        o.params[4] = (long long)1;
+        o.params[5] = (long long)1;
         o.params[-23303] = "1,1";
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
@@ -378,7 +378,7 @@ struct graph {
         op &o = ops.back();
         o.type = "UnaryOp";
         o.desc = desc;
-        o.params[0] = 4;
+        o.params[0] = (long long)4;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -389,10 +389,10 @@ struct graph {
         o.type = "Embed";
         o.desc = desc;
         o.write_flag = true;
-        o.params[0] = c.dim;
-        o.params[1] = c.vocab_size;
-        o.params[2] = 0;
-        o.params[3] = c.dim * c.vocab_size;
+        o.params[0] = (long long)c.dim;
+        o.params[1] = (long long)c.vocab_size;
+        o.params[2] = (long long)0;
+        o.params[3] = (long long)(c.dim * c.vocab_size);
         o.inputs.push_back(in);
         o.outputs.push_back(cnt_operands);
         o.weight_size = c.dim * c.vocab_size;
@@ -407,10 +407,10 @@ struct graph {
         o.desc = desc;
         o.write_flag = true;
         o.quantize_flag = true;
-        o.params[0] = infeat;
-        o.params[1] = outfeat;
-        o.params[2] = 32;
-        o.group_size = 32;
+        o.params[0] = (long long)infeat;
+        o.params[1] = (long long)outfeat;
+        o.params[2] = (long long)32;
+        o.group_size = (long long)32;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         o.weights = weights;
@@ -433,7 +433,7 @@ struct graph {
         o.type = "Slice";
         o.desc = desc;
         o.params[-23300] = "2,-233,-233";
-        o.params[1] = 3;
+        o.params[1] = (long long)3;
         o.inputs.push_back(a);
         int x, y;
         x = cnt_operands++;
@@ -448,10 +448,10 @@ struct graph {
         op &o = ops.back();
         o.type = "Reshape";
         o.desc = desc;
-        o.params[0] = w;
-        o.params[1] = z;
-        o.params[11] = y;
-        o.params[2] = x;
+        o.params[0] = (long long)w;
+        o.params[1] = (long long)z;
+        o.params[11] = (long long)y;
+        o.params[2] = (long long)x;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -462,9 +462,9 @@ struct graph {
         op &o = ops.back();
         o.type = "Reshape";
         o.desc = desc;
-        o.params[0] = z;
-        o.params[1] = y;
-        o.params[2] = x;
+        o.params[0] = (long long)z;
+        o.params[1] = (long long)y;
+        o.params[2] = (long long)x;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -474,8 +474,8 @@ struct graph {
         op &o = ops.back();
         o.type = "Reshape";
         o.desc = desc;
-        o.params[0] = y;
-        o.params[1] = x;
+        o.params[0] = (long long)y;
+        o.params[1] = (long long)x;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -485,7 +485,7 @@ struct graph {
         op &o = ops.back();
         o.type = "Concat";
         o.desc = desc;
-        o.params[0] = axis;
+        o.params[0] = (long long)axis;
         o.inputs.push_back(a);
         o.inputs.push_back(b);
         o.outputs.push_back(cnt_operands);
@@ -496,7 +496,7 @@ struct graph {
         op &o = ops.back();
         o.type = "Permute";
         o.desc = desc;
-        o.params[0] = 2;
+        o.params[0] = (long long)2;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -506,7 +506,7 @@ struct graph {
         op &o = ops.back();
         o.type = "Permute";
         o.desc = desc;
-        o.params[0] = 1;
+        o.params[0] = (long long)1;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;
@@ -516,8 +516,8 @@ struct graph {
         op &o = ops.back();
         o.type = "Softmax";
         o.desc = desc;
-        o.params[0] = 2;
-        o.params[1] = 1;
+        o.params[0] = (long long)2;
+        o.params[1] = (long long)1;
         o.inputs.push_back(a);
         o.outputs.push_back(cnt_operands);
         return cnt_operands++;

@@ -1041,6 +1041,9 @@ def convert_model_names(model: LazyModel, params: Params) -> LazyModel:
             print(f"skipping tensor {name_new}")
             continue
 
+        if isinstance(lazy_tensor, tuple):
+            lazy_tensor = lazy_tensor[0]
+
         print(f"{name:48s} -> {name_new:40s} | {lazy_tensor.data_type.name:6s} | {lazy_tensor.shape}")
         out[name_new] = lazy_tensor
 
