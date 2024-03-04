@@ -47,14 +47,69 @@ void bpe::load(std::string path) {
     fclose(f);
 }
 
+typedef struct {
+    const char *str;
+    int id;
+} TokenIndex;
+
+int compare_tokens(const void *a, const void *b) {
+    return strcmp(((TokenIndex*)a)->str, ((TokenIndex*)b)->str);
+}
+
+int str_lookup(char *str, TokenIndex *sorted_vocab, int vocab_size) {
+    // efficiently find the perfect match for str in vocab, return its index or -1 if not found
+    TokenIndex tok = { .str = str }; // acts as the key to search for
+    TokenIndex *res = (TokenIndex *)bsearch(&tok, sorted_vocab, vocab_size, sizeof(TokenIndex), compare_tokens);
+    return res != NULL ? res->id : -1;
+}
+
 std::vector<int> bpe::encode(std::string s) {
     if (s.length() && s[0] != ' ') s = " " + s;
+
+    // sort vocabulary
+    TokenIndex *sorted_vocab = (TokenIndex *)malloc(vocab_size * sizeof(TokenIndex));
+    for (int i = 0; i < vocab_size; i++) {
+        sorted_vocab[i].str = vocab[i].c_str();
+        sorted_vocab[i].id = i;
+    }
+    qsort(sorted_vocab, vocab_size, sizeof(TokenIndex), compare_tokens);
+
+    char* str_buffer = (char *)malloc((s.length()*2 +1 +2) * sizeof(char));
+    size_t str_len = 0;
+
     std::vector<int> tokens;
-    for (size_t i = 0; i < s.length(); i++) {
-        std::string c;
-        c += s[i];
-        int id = lookup[c];
-        tokens.push_back(id);
+    for (const char *c = s.c_str(); *c != '\0'; c++) {
+        if ((*c & 0xC0) != 0x80) {
+            // this byte must be either a leading byte (11...) or an ASCII char (0x...)
+            // => reset our location, as we're starting a new UTF-8 codepoint
+            str_len = 0;
+        }
+
+        // append the current byte to the buffer
+        str_buffer[str_len++] = *c; // ++ is post-increment, incremented after this line
+        str_buffer[str_len] = '\0';
+
+        // while the next character is a continuation byte, continue appending
+        // but if there are too many of them, just stop to avoid overruning str_buffer size.
+        if ((*(c+1) & 0xC0) == 0x80 && str_len < 4) {
+            continue;
+        }
+
+        // ok c+1 is not a continuation byte, so we've read in a full codepoint
+        int id = str_lookup(str_buffer, sorted_vocab, vocab_size);
+
+        if (id != -1) {
+            // we found this codepoint in vocab, add it as a token
+            tokens.push_back(id);
+        } else {
+            // byte_fallback encoding: just encode each byte as a token
+            // +3 is here because the first 3 vocab elements are <unk>, <s>, </s>
+            // so the individual bytes only start at index 3
+            for (int i=0; i < str_len; i++) {
+                tokens.push_back((unsigned char)str_buffer[i] + 3);
+            }
+        }
+        str_len = 0;
     }
 
     while (true) {
@@ -75,6 +130,10 @@ std::vector<int> bpe::encode(std::string s) {
         tokens[best_index] = best_token;
         tokens.erase(tokens.begin() + best_index + 1);
     }
+
+    free(str_buffer);
+    free(sorted_vocab);
+
     return tokens;
 }
 
@@ -119,6 +178,28 @@ tinyllama::tinyllama(std::string bin, std::string param, int n_layers,
     // net.opt.num_threads = 8;
 }
 
+void pretty_print(const ncnn::Mat& m)
+{
+    for (int q=0; q<m.c; q++)
+    {
+        const float* ptr = m.channel(q);
+        for (int z=0; z<m.d; z++)
+        {
+            for (int y=0; y<m.h; y++)
+            {
+                for (int x=0; x<m.w; x++)
+                {
+                    printf("%f ", ptr[x]);
+                }
+                ptr += m.w;
+                printf("\n");
+            }
+            printf("\n");
+        }
+        printf("------------------------\n");
+    }
+}
+
 std::vector<float> tinyllama::forward(int token) {
     ncnn::Mat x(1), fc, fs;
     *((int*)x) = token;
@@ -142,6 +223,19 @@ std::vector<float> tinyllama::forward(int token) {
         ex.input(kc_name.c_str(), kcache[i]);
         ex.input(vc_name.c_str(), vcache[i]);
     }
+
+    /*ncnn::Mat test0_mat;
+    ex.extract("59", test0_mat);
+    pretty_print(test0_mat);
+
+    ncnn::Mat test1_mat;
+    ex.extract("60", test1_mat);
+    pretty_print(test1_mat);
+
+    ncnn::Mat test2_mat;
+    ex.extract("61", test2_mat);
+    pretty_print(test2_mat);*/
+
     ncnn::Mat logits_mat;
     for (int i = 0; i < n_l; i++) {
         auto layer_name = std::to_string(i);
